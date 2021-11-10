@@ -3,8 +3,8 @@ promptPrefix: .asciiz "candidate sequence : ["
 promptPostfix: .asciiz "]\n"
 comma: .asciiz ","
 
-arr: .word 3, 4, 1, 7, 12
-arraySize: .word 5
+arr: .word 3, 10, 7, 9, 4, 11
+arraySize: .word 6
 temp: .space 40
 tempSize: .word 0
 
@@ -41,6 +41,9 @@ tempSize: .word 0
 		jal branchOne
 		bne $v0, $zero, algoReturn
 
+		jal branchTwo
+
+		# call algo
 		lw $a0, 4($sp) 							# get array adress
 		addi $a0, $a0, 4						# increment array pointer
 		lw $a1, 8($sp)							# get array index
@@ -63,6 +66,54 @@ tempSize: .word 0
 		lw $ra, 0($sp)
 		addi $sp, $sp, 24
 		jr $ra
+
+	branchTwo:
+		addi $sp, $sp, -24
+		sw $ra, 0($sp)
+		sw $s0, 4($sp)
+		sw $s1, 8($sp)
+		sw $s2, 12($sp)
+		sw $s3, 16($sp)
+
+		jal tempSizeZero
+		move $v1, $v0
+		jal currentIndexItemGreaterThanTheLastItem
+		or $v0, $v0, $v1
+
+		beq $v0, $zero, branchTwoFalse
+		# if true append and call algo
+		jal appendTemp
+
+		# call algo
+		lw $a0, 4($sp) 							# get array adress
+		addi $a0, $a0, 4						# increment array pointer
+		lw $a1, 8($sp)							# get array index
+		addi $a1, $a1, 1						# increment array index
+		lw $a2, 12($sp)							# get temp array adress
+		addi $a2, $a2, 4						# increment temp array pointer
+		lw $a3, 16($sp)							# get tempSize
+		addi $a3, $a3, 1						# increment tempSize
+		jal algo
+
+
+		lw $ra, 0($sp)
+		lw $s0, 4($sp)
+		lw $s1, 8($sp)
+		lw $s2, 12($sp)
+		lw $s3, 16($sp)
+		addi $sp, $sp, 24
+		jr $ra
+
+	branchTwoFalse:
+		# go back to algo function
+		lw $ra, 0($sp)
+		lw $s0, 4($sp)
+		lw $s1, 8($sp)
+		lw $s2, 12($sp)
+		lw $s3, 16($sp)
+		addi $sp, $sp, 24
+		jr $ra		
+
 
 	branchOne:
 		addi $sp, $sp, -12
@@ -89,10 +140,12 @@ tempSize: .word 0
 
 	branchOneElseFirst:
 		lw $ra, 0($sp)
+		lw $s3, 4($sp)
 		addi $sp, $sp, 12
 		j false
 	branchOneElseSecond:
 		lw $ra, 0($sp)
+		lw $s3, 4($sp)
 		addi $sp, $sp, 12
 		j true
 
@@ -104,7 +157,7 @@ tempSize: .word 0
 		jr $ra
 	currentIndexItemGreaterThanTheLastItem:
 		lw $t0, 0($s0)					# *arr
-		lw $t1, -4($s3)					# temp[tempSize-1]
+		lw $t1, -4($s2)					# temp[tempSize-1]
 		bgt $t0, $t1, true			# *arr > temp[tempSize-1]
 		j false
 	tempSizeZero:
