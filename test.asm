@@ -2,11 +2,14 @@
 promptPrefix: .asciiz "candidate sequence : ["
 promptPostfix: .asciiz "]\n"
 comma: .asciiz ","
+dash: .asciiz "-------------------------\n"
 
 arr: .word 3, 10, 7, 9, 4, 11
 arraySize: .word 6
 temp: .space 40
 tempSize: .word 0
+longest: .space 40
+longestSize: .word 0
 
 .text:
 
@@ -15,6 +18,17 @@ tempSize: .word 0
 	la $a2, temp
 	lw $a3, tempSize
 	jal algo
+
+
+	# print dash
+	li $v0, 4
+	la $a0, dash
+	syscall
+
+	# print longest
+	la $a1, longest
+	lw $a2, longestSize
+	jal printArr
 
 
 	li $v0, 10
@@ -164,7 +178,8 @@ tempSize: .word 0
 		beq $s3, $zero, true		# tempSize == 0
 		j false
 	tempSizeGreaterThanLargest:
-		# placeholder
+		lw $t0, longestSize						# longestSize
+		bgt $s3, $t0, true						# if (tempSize > longestSize) => true
 		j false
 	indexGreaterThanArrSize:
 		lw $t0, arraySize				# arraySize
@@ -177,7 +192,30 @@ tempSize: .word 0
 		li $v0, 0x00000000
 		jr $ra
 	changeLongest:
-		jr $ra
+		addi $sp, $sp, -8
+		sw $ra, 0($sp)
+		
+		addi $t0, $zero, 0				# counter = 0
+		move $t1, $s3							# tempSize
+		lw $t2, longestSize				# longestSize
+		la $t3, temp							# temp adress
+		la $t4, longest						# longest adress
+		jal changeLongestLoop
+
+		la $t2, longestSize				# longestSize adress
+		sw $s3, ($t2)								# longestSize = tempSize
+
+		lw $ra, 0($sp)
+		addi $sp, $sp, 8
+		jr $ra	
+	changeLongestLoop:
+		beq $t0, $t1, goBack			# termination condition
+		lw $t5, 0($t3)						# get current temp value
+		sw $t5, ($t4)							# save current temp value to longest
+		addi $t0, $t0, 1					# increment counter by 1
+		addi $t3, $t3, 4					# increment temp adress pointer by 4
+		addi $t4, $t4, 4					# increment longest adress pointer by 4
+		j changeLongestLoop				# repeat the loop
 	goBack:
 		jr $ra
 	printArr:
