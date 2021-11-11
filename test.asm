@@ -49,7 +49,7 @@ tempSize: .word 0
 		lw $a1, 8($sp)							# get array index
 		addi $a1, $a1, 1						# increment array index
 		lw $a2, 12($sp)							# get temp array adress
-		addi $a2, $a2, 4						# increment temp array pointer
+		# addi $a2, $a2, 4						# increment temp array pointer
 		lw $a3, 16($sp)							# get tempSize
 		jal algo
 
