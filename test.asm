@@ -1,6 +1,8 @@
 .data
 promptPrefix: .asciiz "candidate sequence : ["
-promptPostfix: .asciiz "]\n"
+promptPostfix: .asciiz "]"
+promptSize: .asciiz " ,size = "
+newLine: .asciiz "\n"
 comma: .asciiz ","
 dash: .asciiz "-------------------------\n"
 
@@ -238,6 +240,18 @@ longestSize: .word 0
 
 		li $v0, 4
 		la $a0, promptPostfix
+		syscall
+
+		li $v0, 4
+		la $a0, promptSize
+		syscall
+
+		la $v0, 1
+		move $a0, $s1
+		syscall
+
+		li $v0, 4
+		la $a0, newLine
 		syscall
 
 		lw $ra, 0($sp)						# load return adress back
